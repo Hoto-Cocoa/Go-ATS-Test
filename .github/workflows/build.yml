@@ -17,15 +17,17 @@ jobs:
         with:
           go-version: '1.23'
 
+      - name: Install syso
+        run: |
+          go install github.com/hallazzang/syso/cmd/syso@latest
+
       - name: Build Windows executable
         env:
           GOOS: windows
           GOARCH: 386
         run: |
-          go install github.com/hallazzang/syso/cmd/syso@latest
           Copy-Item 'assets/syso.json' .; (Get-Content '.\syso.json' -Raw) -replace '\{REPO_NAME\}','RRR' -replace '\{VERSION\}','VVV' | Set-Content '.\syso.json'
           Copy-Item 'assets/app.manifest' .; (Get-Content '.\app.manifest' -Raw) -replace '\{REPO_NAME\}','RRR' | Set-Content '.\app.manifest'
-          dir "$(go env GOPATH)\bin"
           & "$(go env GOPATH)\bin\syso.exe"
           go build -ldflags "-s -w" -o "output.exe"
 
