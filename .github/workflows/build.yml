@@ -33,7 +33,7 @@ jobs:
           endpoint: ${{ secrets.AZURE_CODE_SIGNING_ENDPOINT }}
           trusted-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
           certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-          files: windows-x64.exe
+          files: ${{ github.workspace }}\windows-x64.exe
 
       - name: Get existing release ID (if any)
         id: get_release
