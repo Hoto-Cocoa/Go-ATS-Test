@@ -1,0 +1,72 @@
+name: Build, Sign and Release Windows Binary
+
+on:
+  push:
+    tags:
+      - 'r*'
+
+jobs:
+  build-sign-release:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Build Windows executable
+        env:
+          GOOS: windows
+          GOARCH: amd64
+        run: |
+          go build -ldflags "-s -w" -o myapp.exe ./cmd/myapp
+
+      - name: Sign the executable with Azure Trusted Signing
+        uses: azure/trusted-signing-action@v0
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: ${{ secrets.AZURE_CODE_SIGNING_ENDPOINT }}
+          trusted-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+          certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+          files: myapp.exe
+
+      - name: Get existing release ID (if any)
+        id: get_release
+        run: |
+          RELEASE_ID=$(gh release view ${{ github.ref_name }} --repo ${{ github.repository }} --json id -q .id || echo "")
+          echo "release_id=$RELEASE_ID" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release if not exists
+        if: steps.get_release.outputs.release_id == ''
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: Determine upload URL
+        id: upload_url
+        run: |
+          if [ -n "${{ steps.get_release.outputs.release_id }}" ]; then
+            API_URL="https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release.outputs.release_id }}/assets"
+          else
+            API_URL="${{ steps.create_release.outputs.upload_url }}"
+          fi
+          echo "upload_url=$API_URL" >> $GITHUB_OUTPUT
+
+      - name: Upload signed executable
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.upload_url.outputs.upload_url }}?name=myapp.exe
+          asset_path: myapp.exe
+          asset_name: myapp.exe
+          asset_content_type: application/vnd.microsoft.portable-executable
