@@ -38,8 +38,7 @@ jobs:
       - name: Get existing release ID (if any)
         id: get_release
         run: |
-          $RELEASE_ID = (gh release view ${{ github.ref_name }} --repo ${{ github.repository }} --json id -q .id) ?? ""
-          
+          $RELEASE_ID = (gh release view ${{ github.ref_name }} --repo ${{ github.repository }} --json id -q .databaseId) ?? ""
           echo "release_id=$RELEASE_ID" >> $ENV:GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
