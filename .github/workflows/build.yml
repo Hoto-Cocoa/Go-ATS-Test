@@ -39,7 +39,8 @@ jobs:
         id: get_release
         run: |
           $RELEASE_ID = (gh release view ${{ github.ref_name }} --repo ${{ github.repository }} --json id -q .id) ?? ""
-          echo "::set-output release_id=$RELEASE_ID"
+          
+          echo "release_id=$RELEASE_ID" >> $ENV:GITHUB_OUTPUT
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -56,7 +57,7 @@ jobs:
       - name: Determine upload URL
         id: upload_url
         run: |
-          $API_URL = if ("${{ steps.get_release.outputs.release_id }}") { "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release.outputs.release_id }}/assets" } else { "${{ steps.create_release.outputs.upload_url }}" }; echo "::set-output upload_url=$API_URL"
+          $API_URL = if ("${{ steps.get_release.outputs.release_id }}") { "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ steps.get_release.outputs.release_id }}/assets" } else { "${{ steps.create_release.outputs.upload_url }}" }; echo "upload_url=$API_URL" >> $ENV:GITHUB_OUTPUT
 
       - name: Upload signed executable
         uses: actions/upload-release-asset@v1
