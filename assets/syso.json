@@ -19,12 +19,12 @@
           "Strings": {
             "CompanyName": "{REPO_NAME} Contributors",
             "FileDescription": "{REPO_NAME}",
-            "FileVersion": "__VERSION__",
+            "FileVersion": "{VERSION}",
             "InternalName": "{REPO_NAME}",
             "LegalCopyright": "\u00a9 {REPO_NAME} Contributors. All rights reserved.",
             "OriginalFilename": "{REPO_NAME}.exe",
             "ProductName": "{REPO_NAME}",
-            "ProductVersion": "__VERSION__"
+            "ProductVersion": "{VERSION}"
           }
         }
       ],
