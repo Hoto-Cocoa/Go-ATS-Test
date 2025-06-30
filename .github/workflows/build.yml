@@ -22,6 +22,10 @@ jobs:
           GOOS: windows
           GOARCH: 386
         run: |
+          go install github.com/hallazzang/syso/cmd/syso@latest
+          Copy-Item 'assets/syso.json' .; (Get-Content '.\syso.json' -Raw) -replace '\{REPO_NAME\}','RRR' -replace '\{VERSION\}','VVV' | Set-Content '.\syso.json'
+          Copy-Item 'assets/app.manifest' .; (Get-Content '.\app.manifest' -Raw) -replace '\{REPO_NAME\}','RRR' | Set-Content '.\app.manifest'
+          syso
           go build -ldflags "-s -w" -o "output.exe"
 
       - name: Run UPX
@@ -55,7 +59,7 @@ jobs:
         if: steps.get_release.outputs.release_id == ''
         id: create_release
         uses: actions/create-release@v1
-        with:  
+        with:
           tag_name: ${{ github.ref_name }}
           release_name: ${{ github.ref_name }}
           draft: false
